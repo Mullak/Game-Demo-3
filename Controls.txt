@@ -1,0 +1,5 @@
+Arrow keys to move
+Space to shoot
+P to pause
+Esc to close
+Enter to select
