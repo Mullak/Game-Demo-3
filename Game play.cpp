@@ -229,6 +229,9 @@ void gameUpdate()
 		else
 		{
 			isDead = true;
+			textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
+			RenewelFont = myEngine->LoadFont("Poplar Std", 85);
+			return;
 		}
 	}
 
@@ -454,13 +457,13 @@ void main()
 		{
 			gameRenewal();
 		}
+		else if(isDead)
+		{
+			gameRenewal();
+		}
 		else if(!isPaused)
 		{
 			gameUpdate();
-		}
-		else if(isDead)
-		{
-			return;
 		}
 		else
 		{ 

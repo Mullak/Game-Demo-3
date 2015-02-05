@@ -1,0 +1,41 @@
+﻿Build started 05/02/2015 20:40:43.
+     1>Project "C:\Users\user\Downloads\Game Demo\Game Demo.vcxproj" on node 2 (Build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\Game Demo.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Program Files\TL-Engine\include" /I"C:\Program Files (x86)\OpenAL 1.1 SDK\include" /I"C:\Program Files (x86)\OpenAL 1.1 SDK\freealut-1.1.0-bin\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /Gy /fp:fast /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt "Game play.cpp"
+         Game play.cpp
+     1>c:\users\user\downloads\game demo\game play.cpp(319): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(325): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(340): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(345): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(373): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(377): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(381): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(385): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\user\downloads\game demo\game play.cpp(389): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\user\Downloads\Game Demo\Game Demo.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\TL-Engine\lib" /LIBPATH:"C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32" /LIBPATH:"C:\Program Files (x86)\OpenAL 1.1 SDK\freealut-1.1.0-bin\lib" "TL-Engine2012Debug.lib" OpenAL32.lib alut.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST:NO /DEBUG /PDB:"C:\Users\user\Downloads\Game Demo\\Game Demo.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /IMPLIB:"C:\Users\user\Downloads\Game Demo\\Game Demo.lib" /MACHINE:X86 /SAFESEH:NO Debug\Crate.obj
+         "Debug\Game play.obj"
+         Debug\Goal.obj
+         "Debug\Main Controls.obj"
+         Debug\Map.obj
+         Debug\Player.obj
+         Debug\Runner.obj
+         Debug\Shooter.obj
+         Game Demo.vcxproj -> C:\Users\user\Downloads\Game Demo\\Game Demo.exe
+       PostBuildEvent:
+         Description: Copying DLLs & shaders...
+         copy "C:\Program Files\TL-Engine\3rd Party\Irrlicht-0.7\bin\VisualStudio\IrrlichtDebug.dll" "C:\Users\user\Downloads\Game Demo\\" > NUL
+         copy "C:\Program Files\TL-Engine\3rd Party\TL-Xtreme\shader\*.*" "C:\Users\user\Downloads\Game Demo\\" > NUL
+         copy "C:\Program Files (x86)\OpenAL 1.1 SDK\freealut-1.1.0-bin\lib\alut.dll"
+         :VCEnd
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file "Debug\Game Demo.unsuccessfulbuild".
+         Touching "Debug\Game Demo.lastbuildstate".
+     1>Done Building Project "C:\Users\user\Downloads\Game Demo\Game Demo.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:06.71
