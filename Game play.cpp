@@ -13,6 +13,9 @@
 #include "Player.h"
 #include "Main Controls.h"
 #include "Shooter.h"
+#include "Crate.h"
+#include "Runner.h"
+#include "Goal.h"
 using namespace tle;
 
 #include <al.h>      // Main OpenAL functions
@@ -54,13 +57,13 @@ const float minVolume = 0.0f;
 //Constant Variables
 const float baseHeight = 0.0f;// Height the main floor is at
 const float speed = 55.0f; // speed of player and jumping
-const float jumpSpeed = 0.10f;
+const float jumpSpeed = 0.15f;
 
 //Engine
 I3DEngine* myEngine = New3DEngine( kTLX );
 
 //Bullet variables
-const float bulletSpeed = 80.0f; // Movement speed of a bullet
+const float bulletSpeed = 100.0f; // Movement speed of a bullet
 int numBullets = 0;
 const int maxBullets = 5;
 
@@ -71,13 +74,12 @@ IMesh* bulletMesh = NULL;
 IMesh* runnerMesh = NULL;
 IMesh* platformMesh = NULL;
 IMesh* platformWideMesh = NULL;
-IMesh* crateMesh = NULL;
 
 IModel* bullet = NULL;
 IModel* ground = NULL;
-deque <IModel*> crates; 
+deque <CCrate*> crates; 
 deque <CShooter*> shooters;
-deque <IModel*> runners;
+deque <CRunner*> runners;
 deque <IModel*> platforms;
 deque <IModel*> platformsWide;
 
@@ -90,14 +92,15 @@ IFont* FPSDisplay = NULL;
 stringstream outText;
 ISprite* backdrop = NULL;
 IFont* frontEndFont = NULL; // the font for the front end.
+IFont* RenewelFont = NULL;
 ISprite* textBackColour = NULL; //background square for front end.
 
 //Control Variables
 enum EKeyCode quitKey = Key_Escape;
-enum EKeyCode jumpKey = Key_Up;
-enum EKeyCode leftKey = Key_Left;
-enum EKeyCode rightKey = Key_Right;
-enum EKeyCode downKey = Key_Down;
+enum EKeyCode jumpKey = Key_W;
+enum EKeyCode leftKey = Key_A;
+enum EKeyCode rightKey = Key_D;
+enum EKeyCode downKey = Key_S;
 enum EKeyCode fireKey = Key_Space;
 enum EKeyCode enterKey = Key_Return;
 enum EKeyCode pauseKey = Key_P;
@@ -112,6 +115,7 @@ int playerLives;
 bool isPaused = false;
 bool isQuiting = false;
 bool isBegining = false;
+bool isFinished = false;
 bool collision = false;
 
 bool faceRight = true;
@@ -122,11 +126,11 @@ bool isDead = false;
 deque <BulletData*> bullets;
 /*Classes*/
 CPlayer* player = NULL;
+CGoal* goal = NULL;
 
 void frontEndSetUp()
 {	
 	soundLoader(volume);
-	
 	alSourcePlay( Menu );
 	frontEndFont = myEngine->LoadFont("Poplar Std", 85);
 	textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
@@ -146,15 +150,15 @@ void frontEndUpdate()
 	{
 		textBackColour->SetY(100);
 	}
-	if(myEngine->KeyHit(enterKey) && textBackColour->GetY() == 100)
+	if(myEngine->KeyHit(enterKey) && textBackColour->GetY() == 100) 
 	{
 		isBegining = !isBegining;
 	}
-
-	if(myEngine->KeyHit(quitKey)  && textBackColour->GetY() == 200)
+	else if(myEngine->KeyHit(quitKey)  && textBackColour->GetY() == 200)
 	{
 		isQuiting = !isQuiting;
 	}
+	
 }
 
 void frontEndRemovel()
@@ -164,22 +168,17 @@ void frontEndRemovel()
 	myEngine->RemoveSprite(backdrop);
 	alSourceStop( Menu );
 }
-
-void gameShutDown()
-{
-	myEngine->Stop();
-}
 	
 void gameSetUp()
 {
 	alSourcePlay( sourceBack );
 	player = new CPlayer();
+	goal = new CGoal();
 	/*Model Setup*/
 	floorMesh = myEngine->LoadMesh("Ground.x");
 	bulletMesh = myEngine->LoadMesh("Bullet.x");
 	platformMesh = myEngine->LoadMesh("platform.x");
 	platformWideMesh = myEngine->LoadMesh("PlatformWide.x");
-	crateMesh = myEngine->LoadMesh("Crate.x");
 	ground = floorMesh->CreateModel(-15.0f, baseHeight, 60.0f);
 	ground->RotateY(90);
 	camera = myEngine->CreateCamera(kManual,0.0f,40.0f,-10.0f);
@@ -188,6 +187,8 @@ void gameSetUp()
 	/*UI Setup*/
 	FPSDisplay = myEngine->LoadFont( "Comic Sans MS", 36);
 }
+
+void gameRenewal();
 
 void gameUpdate()
 {
@@ -231,11 +232,18 @@ void gameUpdate()
 		}
 	}
 
-	collision = playerCollisionDectection(platforms,20.0f,0.0f,15.0f,-14.75);
+	collision = playerCollisionDectection(platforms, 20.0f,0.0f,15.0f,-14.75);
 	if(!collision)
 	{
-		collision = playerCollisionDectection(platformsWide,30.0f,25.0f,15.0f,-14.75);
+		collision = playerCollisionDectection(platformsWide, 30.0f,25.0f,15.0f,-14.75);
 	}
+	if(collisionDetection(playerX, playerY, goal->getX(), goal->getY(), 30.0f,25.0f,15.0f,-14.75))
+	{
+		textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
+		RenewelFont = myEngine->LoadFont("Poplar Std", 85);
+		isFinished = true;
+	}
+
 	//Movement Controls
 	if(myEngine->KeyHeld(leftKey) && ground->GetX() < 0)
 	{
@@ -268,19 +276,23 @@ void gameUpdate()
 			gravity = 2.5f;
 		}
 			ground->MoveY(-(jumpSpeed * gravity));
-			gravity -= 0.0105f;
+			gravity -= 0.0155f;
 	}
 	else
 	{
 	//checks to see if players is in the air moves ground up if so
 		if(floorY < baseHeight && !collision)
 		{
-			gravity -= 0.0105f;
+			gravity -= 0.0155f;
 			ground->MoveY(-(jumpSpeed * gravity));
 		}
 		if(floorY < baseHeight && collision)
 		{
 			gravity = 0.0f;
+		}
+		if(floorY > baseHeight)
+		{
+			gravity = 2.5f;
 		}
 	//sets gravity to start value if thier is a collision or on ground floor
 		if(floorY > baseHeight)
@@ -299,43 +311,101 @@ void gameUpdate()
 		isPaused = !isPaused;
 	}
 
-	bulletMovement(bulletSpeed, maxBullets, playerY, playerX, false);
+	bulletMovement(bulletSpeed, maxBullets, playerY, playerX);
 
-	if(shooters.size())
+	for(int i = 0; i < shooters.size(); i++)
 	{
-		for(int i = 0; i < shooters.size(); i++)
-		{
-			shooters[i]->updateShooter(player, updateTime);
-		}
+		shooters[i]->updateShooter(player, updateTime);
 	}
-}
 	
+
+	for(int i = 0; i < runners.size(); i++)
+	{
+		runners[i]->updateRunner(player, updateTime);
+	}
+	
+}
+
 void gameRemovel()
 {
-	alutExit();
 	delete(player);
+	delete(goal);
 	floorMesh->RemoveModel(ground);
 	myEngine->RemoveMesh(floorMesh);
 	myEngine->RemoveMesh(bulletMesh);
 	myEngine->RemoveCamera(camera);
-
 	for(int i = 0; i < platforms.size(); i++)
 	{
 		platformMesh->RemoveModel(platforms[i]);
 	}
 	myEngine->RemoveMesh(platformMesh);
-
-	for(int i = 0; i < crates.size(); i++)
-	{
-		crateMesh->RemoveModel(crates[i]);
-	}
-	myEngine->RemoveMesh(crateMesh);
-
 	for(int i = 0; i < platformsWide.size(); i++)
 	{
 		platformWideMesh->RemoveModel(platformsWide[i]);
 	}
 	myEngine->RemoveMesh(platformWideMesh);
+}
+
+void gameRenewal()
+{
+		RenewelFont->Draw("Retry",155,100);
+		RenewelFont->Draw("Quit",155,200);
+
+		if(myEngine->KeyHit(downKey))
+		{
+			textBackColour->SetY(200);
+		}
+		else if(myEngine->KeyHit(jumpKey))
+		{
+			textBackColour->SetY(100);
+		}
+		if(myEngine->KeyHit(enterKey) && textBackColour->GetY() == 100) 
+		{
+			player->~CPlayer();
+			goal ->~CGoal();
+			floorMesh->RemoveModel(ground);
+			myEngine->RemoveMesh(floorMesh);
+			myEngine->RemoveMesh(bulletMesh);
+			myEngine->RemoveCamera(camera);
+			for(int i = 0; i < platforms.size(); i++)
+			{
+				platformMesh->RemoveModel(platforms[i]);
+			}
+			for(int i = 0; i < platformsWide.size(); i++)
+			{
+				platformWideMesh->RemoveModel(platformsWide[i]);
+			}
+			for(int i = 0; i < shooters.size(); i++)
+			{
+				shooters[i]->~CShooter();
+			}
+			for(int i = 0; i < runners.size(); i++)
+			{
+				runners[i]->~CRunner();
+			}
+			for(int i = 0; i < crates.size(); i++)
+			{
+				crates[i]->~CCrate();
+			}
+			myEngine->RemoveMesh(platformMesh);
+			myEngine->RemoveMesh(platformWideMesh);
+			shooters.clear();
+			runners.clear();
+			crates.clear();
+			platformsWide.clear();
+			platforms.clear();
+			gameSetUp();
+			myEngine->RemoveSprite(textBackColour);
+			myEngine->RemoveFont(RenewelFont);
+			isFinished = false;
+		}
+		else if(myEngine->KeyHit(quitKey)  && textBackColour->GetY() == 200)
+		{
+			isQuiting = !isQuiting;
+			myEngine->RemoveSprite(textBackColour);
+			myEngine->RemoveFont(RenewelFont);
+		}
+	
 }
 
 void main()
@@ -361,32 +431,36 @@ void main()
 		}
 		if(isQuiting)
 		{
-			gameShutDown();
+			myEngine->Stop();
 		}
 	}
 
 	frontEndRemovel();
 
-	if(myEngine->IsRunning())
+	if(!isQuiting)
 	{
 		gameSetUp();
 	}
 	
 	while (myEngine->IsRunning())
 	{
+		if(isQuiting)
+		{
+			break;
+		}
 		// Draw the scene
 		myEngine->DrawScene();
-		if(!isPaused)
+		if(isFinished)
+		{
+			gameRenewal();
+		}
+		else if(!isPaused)
 		{
 			gameUpdate();
 		}
 		else if(isDead)
 		{
-			FPSDisplay->Draw("Game Over", 500, 500, kWhite);
-			if(myEngine->KeyHit(quitKey))
-			{
-				break;
-			}
+			return;
 		}
 		else
 		{ 
@@ -399,11 +473,11 @@ void main()
 		
 		if(myEngine->KeyHit(quitKey))
 		{
+			alutExit();
+			gameRemovel();
 			break;
 		}
 	}
-	gameRemovel();
-	
 	// Delete the 3D engine now we are finished with it
 	myEngine->Delete();
 	

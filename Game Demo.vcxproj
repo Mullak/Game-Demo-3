@@ -119,16 +119,22 @@ copy "C:\Program Files\TL-Engine\3rd Party\TL-Xtreme\shader\*.*" "$(OutDir)" &gt
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Crate.cpp" />
     <ClCompile Include="Game play.cpp" />
+    <ClCompile Include="Goal.cpp" />
     <ClCompile Include="Main Controls.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Runner.cpp" />
     <ClCompile Include="Shooter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Crate.h" />
+    <ClInclude Include="Goal.h" />
     <ClInclude Include="Main Controls.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Runner.h" />
     <ClInclude Include="Shooter.h" />
   </ItemGroup>
   <ItemGroup>
