@@ -18,46 +18,10 @@
 #include "Goal.h"
 using namespace tle;
 
-#include <al.h>      // Main OpenAL functions
-#include <alc.h>     // OpenAL "context" functions (also part of main OpenAL API)
-#include <AL/alut.h> // OpenAL utility library - helper functions
-
-/*Sound Variables*/
-ALuint buffer;
-ALuint bufferBack;
-ALuint bufferMenu;
-
-ALuint source;
-ALuint sourceBack;
-ALuint Menu;
-
-// Each source has several properties, see the code for examples. Here we store position and velocity of
-// the sound source above (x, y & z)
-ALfloat sourcePos[3] = { 0.0, 5.0, 100.0 };
-ALfloat sourceVel[3] = { 0.0, 0.0, 0.0 };
-ALfloat sourceMusicPos[3] = { 0.0, 0.0, 0.0 };
-ALfloat sourceMusicVel[3] = { 0.0, 0.0, 0.0 };
-// There is always assumed to be a listener in an OpenAL application. We don't need a specific listener
-// variable. However, listeners also have properties (examples in code). Here we store the position and
-// velocity of the listener
-ALfloat listenerPos[3] = { 0.0, 5.0, 100.0 };
-ALfloat listenerVel[3] = { 0.0, 0.0, 0.0 };
-
-// The listener may be at an angle (which may affect the perception of sound). Here we store the 
-// orientation of the listener. The first three values are the facing direction (x, y, z) of the
-// listener - called "at" in the documentation. The next three values are the upward direction
-// of the listener, called "up". These vectors can be extracted from a world or view matrix
-// NOTE: OpenAL (like OpenGL) uses a right-handed system for 3D coordinates. To convert from the
-// left-handed system  we have used, we must negate all Z values (facing direction has -ve Z below)
-ALfloat listenerOri[6] = { 0.0, 0.0, -1.0,
-                           0.0, 1.0, 0.0 };
-float volume = 0.1f;
-const float maxVolume = 2.0f;
-const float minVolume = 0.0f;
 //Constant Variables
 const float baseHeight = 0.0f;// Height the main floor is at
 const float speed = 55.0f; // speed of player and jumping
-const float jumpSpeed = 0.15f;
+const float jumpSpeed = 0.10f;
 
 //Engine
 I3DEngine* myEngine = New3DEngine( kTLX );
@@ -104,7 +68,7 @@ enum EKeyCode downKey = Key_S;
 enum EKeyCode fireKey = Key_Space;
 enum EKeyCode enterKey = Key_Return;
 enum EKeyCode pauseKey = Key_P;
-float gravity = 2.5f;
+float gravity = 3.5f;
 float updateTime = 0.0f; // calculating the updatetime every frame
 const float playerY = 5.0f;
 const float playerX = 0.0f;
@@ -130,8 +94,6 @@ CGoal* goal = NULL;
 
 void frontEndSetUp()
 {	
-	soundLoader(volume);
-	alSourcePlay( Menu );
 	frontEndFont = myEngine->LoadFont("Poplar Std", 85);
 	textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
 	backdrop = myEngine->CreateSprite( "lab.jpg", 0, 0, 1);
@@ -166,12 +128,10 @@ void frontEndRemovel()
 	myEngine->RemoveSprite(textBackColour);
 	myEngine->RemoveFont(frontEndFont);
 	myEngine->RemoveSprite(backdrop);
-	alSourceStop( Menu );
 }
 	
 void gameSetUp()
 {
-	alSourcePlay( sourceBack );
 	player = new CPlayer();
 	goal = new CGoal();
 	/*Model Setup*/
@@ -202,22 +162,6 @@ void gameUpdate()
 	FPSDisplay ->Draw( outText.str(), livesfontX, livesfontY, kWhite );
 	outText.str("");
 	float floorY = ground->GetY();
-	if(myEngine->KeyHit(Key_Period) )
-	{
-		if( volume > minVolume)
-		{
-		volume -= 0.1; 
-		alListenerf ( AL_GAIN, volume ); 
-		}
-	}
-	else if(myEngine->KeyHit(Key_Comma))
-	{
-		if( volume < maxVolume)
-		{
-			volume += 0.1;
-			alListenerf ( AL_GAIN, volume );
-		}
-	}
 
 	if(playerHealth <= 0)
 	{
@@ -276,7 +220,7 @@ void gameUpdate()
 		//code to apply gravity and move the ground and platforms attached to it
 		if(floorY > baseHeight || collision)
 		{
-			gravity = 2.5f;
+			gravity = 3.5f;
 		}
 			ground->MoveY(-(jumpSpeed * gravity));
 			gravity -= 0.0155f;
@@ -295,12 +239,12 @@ void gameUpdate()
 		}
 		if(floorY > baseHeight)
 		{
-			gravity = 2.5f;
+			gravity = 3.5f;
 		}
 	//sets gravity to start value if thier is a collision or on ground floor
 		if(floorY > baseHeight)
 		{
-			gravity = 2.5f;
+			gravity = 3.5f;
 		}
 	}
 
@@ -476,7 +420,6 @@ void main()
 		
 		if(myEngine->KeyHit(quitKey))
 		{
-			alutExit();
 			gameRemovel();
 			break;
 		}
