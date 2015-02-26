@@ -20,14 +20,14 @@ using namespace tle;
 
 //Constant Variables
 const float baseHeight = 0.0f;// Height the main floor is at
-const float speed = 55.0f; // speed of player and jumping
-const float jumpSpeed = 0.10f;
+const float speed = 175.0f; // speed of player and jumping
+const float jumpSpeed = 0.07f;
 
 //Engine
 I3DEngine* myEngine = New3DEngine( kTLX );
 
 //Bullet variables
-const float bulletSpeed = 100.0f; // Movement speed of a bullet
+const float bulletSpeed = 105.0f; // Movement speed of a bullet
 int numBullets = 0;
 const int maxBullets = 5;
 
@@ -57,7 +57,7 @@ stringstream outText;
 ISprite* backdrop = NULL;
 IFont* frontEndFont = NULL; // the font for the front end.
 IFont* RenewelFont = NULL;
-ISprite* textBackColour = NULL; //background square for front end.
+IFont* loadingFont = NULL;
 
 //Control Variables
 enum EKeyCode quitKey = Key_Escape;
@@ -69,7 +69,7 @@ enum EKeyCode fireKey = Key_Space;
 enum EKeyCode enterKey = Key_Return;
 enum EKeyCode pauseKey = Key_P;
 float gravity = 3.5f;
-float updateTime = 0.0f; // calculating the updatetime every frame
+float updateTime = 0.0009f; // calculating the updatetime every frame
 const float playerY = 5.0f;
 const float playerX = 0.0f;
 
@@ -92,40 +92,36 @@ deque <BulletData*> bullets;
 CPlayer* player = NULL;
 CGoal* goal = NULL;
 
+void loading()
+{
+	loadingFont = myEngine->LoadFont("Poplar Std", 85);
+	loadingFont->Draw("Loading...",155,100);
+}
+
 void frontEndSetUp()
 {	
-	frontEndFont = myEngine->LoadFont("Poplar Std", 85);
-	textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
+	frontEndFont = myEngine->LoadFont("Poplar Std", 65);
 	backdrop = myEngine->CreateSprite( "lab.jpg", 0, 0, 1);
 }
 
 void frontEndUpdate()
 {
-	frontEndFont->Draw("Start Game",155,100);
-	frontEndFont->Draw("Quit",155,200);
+	frontEndFont->Draw("Press enter to Start Game",40,100);
+	frontEndFont->Draw("Press Esc to Quit",40,200);
 
-	if(myEngine->KeyHit(downKey))
-	{
-		textBackColour->SetY(200);
-	}
-	else if(myEngine->KeyHit(jumpKey) )
-	{
-		textBackColour->SetY(100);
-	}
-	if(myEngine->KeyHit(enterKey) && textBackColour->GetY() == 100) 
+	if(myEngine->KeyHit(enterKey)) 
 	{
 		isBegining = !isBegining;
 	}
-	else if(myEngine->KeyHit(quitKey)  && textBackColour->GetY() == 200)
+
+	if(myEngine->KeyHit(quitKey))
 	{
 		isQuiting = !isQuiting;
 	}
-	
 }
 
 void frontEndRemovel()
 {
-	myEngine->RemoveSprite(textBackColour);
 	myEngine->RemoveFont(frontEndFont);
 	myEngine->RemoveSprite(backdrop);
 }
@@ -146,6 +142,7 @@ void gameSetUp()
 	mapLoader();
 	/*UI Setup*/
 	FPSDisplay = myEngine->LoadFont( "Comic Sans MS", 36);
+	myEngine->RemoveFont(loadingFont);
 }
 
 void gameRenewal();
@@ -154,11 +151,10 @@ void gameUpdate()
 {
 	player->GetHealth(playerHealth);
 	player->GetLives(playerLives);
-	updateTime = myEngine->Timer();
 	outText << "Health: " << playerHealth;
 	FPSDisplay ->Draw( outText.str(), fontX, fontY, kWhite );
 	outText.str("");
-	outText << "Lives remaining: " << playerLives ;
+	outText << "Lives remaining: " << playerLives;
 	FPSDisplay ->Draw( outText.str(), livesfontX, livesfontY, kWhite );
 	outText.str("");
 	float floorY = ground->GetY();
@@ -173,8 +169,7 @@ void gameUpdate()
 		else
 		{
 			isDead = true;
-			textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
-			RenewelFont = myEngine->LoadFont("Poplar Std", 85);
+			RenewelFont = myEngine->LoadFont("Poplar Std", 65);
 			return;
 		}
 	}
@@ -186,8 +181,7 @@ void gameUpdate()
 	}
 	if(collisionDetection(playerX, playerY, goal->getX(), goal->getY(), 30.0f,25.0f,15.0f,-14.75))
 	{
-		textBackColour = myEngine->CreateSprite("BackTextColour.png",145,100,0);
-		RenewelFont = myEngine->LoadFont("Poplar Std", 85);
+		RenewelFont = myEngine->LoadFont("Poplar Std", 65);
 		isFinished = true;
 	}
 
@@ -295,19 +289,14 @@ void gameRemovel()
 
 void gameRenewal()
 {
-		RenewelFont->Draw("Retry",155,100);
-		RenewelFont->Draw("Quit",155,200);
+		RenewelFont->Draw("Press Enter to Retry",40,100);
+		RenewelFont->Draw("Press Esc to Quit",40,200);
 
-		if(myEngine->KeyHit(downKey))
+		if(myEngine->KeyHit(enterKey)) 
 		{
-			textBackColour->SetY(200);
-		}
-		else if(myEngine->KeyHit(jumpKey))
-		{
-			textBackColour->SetY(100);
-		}
-		if(myEngine->KeyHit(enterKey) && textBackColour->GetY() == 100) 
-		{
+			myEngine->RemoveFont(RenewelFont);
+			loading();
+			myEngine->DrawScene();
 			player->~CPlayer();
 			goal ->~CGoal();
 			floorMesh->RemoveModel(ground);
@@ -342,14 +331,12 @@ void gameRenewal()
 			platformsWide.clear();
 			platforms.clear();
 			gameSetUp();
-			myEngine->RemoveSprite(textBackColour);
-			myEngine->RemoveFont(RenewelFont);
 			isFinished = false;
+			isDead = false;
 		}
-		else if(myEngine->KeyHit(quitKey)  && textBackColour->GetY() == 200)
+		else if(myEngine->KeyHit(quitKey))
 		{
 			isQuiting = !isQuiting;
-			myEngine->RemoveSprite(textBackColour);
 			myEngine->RemoveFont(RenewelFont);
 		}
 	
@@ -383,6 +370,8 @@ void main()
 	}
 
 	frontEndRemovel();
+	loading();
+	myEngine->DrawScene();
 
 	if(!isQuiting)
 	{
