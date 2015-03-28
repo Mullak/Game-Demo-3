@@ -38,14 +38,18 @@ IMesh* bulletMesh = NULL;
 IMesh* runnerMesh = NULL;
 IMesh* platformMesh = NULL;
 IMesh* platformWideMesh = NULL;
-
 IModel* bullet = NULL;
 IModel* ground = NULL;
+
+//Classes
 deque <CCrate*> crates; 
 deque <CShooter*> shooters;
 deque <CRunner*> runners;
 deque <IModel*> platforms;
 deque <IModel*> platformsWide;
+deque <BulletData*> bullets;
+CPlayer* player = NULL;
+CGoal* goal = NULL;
 
 //Text Variables
 int fontY = 20;
@@ -70,27 +74,22 @@ enum EKeyCode enterKey = Key_Return;
 enum EKeyCode pauseKey = Key_P;
 float gravity = 3.5f;
 float updateTime = 0.0009f; // calculating the updatetime every frame
+
+//player Variable
 const float playerY = 5.0f;
 const float playerX = 0.0f;
-
 int playerHealth;
 int playerLives;
 
+//Mics Variables
 bool isPaused = false;
 bool isQuiting = false;
 bool isBegining = false;
 bool isFinished = false;
 bool collision = false;
-
 bool faceRight = true;
 bool faceLeft = false;
 bool isDead = false;
-/************Structures/Classes****************/
-
-deque <BulletData*> bullets;
-/*Classes*/
-CPlayer* player = NULL;
-CGoal* goal = NULL;
 
 void loading()
 {
@@ -157,7 +156,6 @@ void gameUpdate()
 	outText << "Lives remaining: " << playerLives;
 	FPSDisplay ->Draw( outText.str(), livesfontX, livesfontY, kWhite );
 	outText.str("");
-	float floorY = ground->GetY();
 
 	if(playerHealth <= 0)
 	{
@@ -185,81 +183,18 @@ void gameUpdate()
 		isFinished = true;
 	}
 
-	//Movement Controls
-	if(myEngine->KeyHeld(leftKey) && ground->GetX() < 0)
-	{
-		ground->MoveX(speed * updateTime);
-		player->leftLeg();
-		if(faceLeft == false)
-		{
-			faceRight = !faceRight;
-			faceLeft = !faceLeft;
-			player->GetModel()->RotateY(180);
-		}
-	}
-	if(myEngine->KeyHeld(rightKey) && ground->GetX() < 1000)
-	{
-		ground->MoveX(-speed * updateTime);
-		player->rightLeg();
-		if(faceRight == false)
-		{
-			faceRight = !faceRight;
-			faceLeft = !faceLeft;
-			player->GetModel()->RotateY(180);
-		}
-	}
-//Code to make the player look like they are jumping but the ground moves down
-	if(myEngine->KeyHit(jumpKey))
-	{
-		//code to apply gravity and move the ground and platforms attached to it
-		if(floorY > baseHeight || collision)
-		{
-			gravity = 3.5f;
-		}
-			ground->MoveY(-(jumpSpeed * gravity));
-			gravity -= 0.0155f;
-	}
-	else
-	{
-	//checks to see if players is in the air moves ground up if so
-		if(floorY < baseHeight && !collision)
-		{
-			gravity -= 0.0155f;
-			ground->MoveY(-(jumpSpeed * gravity));
-		}
-		if(floorY < baseHeight && collision)
-		{
-			gravity = 0.0f;
-		}
-		if(floorY > baseHeight)
-		{
-			gravity = 3.5f;
-		}
-	//sets gravity to start value if thier is a collision or on ground floor
-		if(floorY > baseHeight)
-		{
-			gravity = 3.5f;
-		}
-	}
-
-	if(myEngine->KeyHeld(downKey) && collision)
-	{
-		ground->MoveY(jumpSpeed * updateTime + 5.0f);
-	}
-
 	if(myEngine->KeyHit(pauseKey))
 	{
 		isPaused = !isPaused;
 	}
 
-	bulletMovement(bulletSpeed, maxBullets, playerY, playerX);
+	playerMovement();
 
 	for(int i = 0; i < shooters.size(); i++)
 	{
 		shooters[i]->updateShooter(player, updateTime);
 	}
 	
-
 	for(int i = 0; i < runners.size(); i++)
 	{
 		runners[i]->updateRunner(player, updateTime);
